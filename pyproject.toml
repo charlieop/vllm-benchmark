@@ -21,6 +21,7 @@ dependencies = [
   "pytest>=8.4",
   "torch>=2.7",
   "transformers>=5.17",
+  "torchvision>=0.29.0",
 ]
 
 [project.scripts]
