@@ -1,0 +1,25 @@
+task_name: white_background
+generation_version: seedream-pro-v3
+output_root: ../outputs
+system_prompt: |
+  Edit the input image according to the instruction. Return one image.
+dataset:
+  path: white_background.py
+  raw_path: white_background
+  params:
+    max_size: [1024, 1024]
+    shrink_mode: scale
+    size_multiple: 16
+evaluator:
+  path: white-background.py
+  params: {}
+model:
+  backend: ark
+  id: doubao-seedream-5-0-pro-260628
+  api_key: ${ARK_API_KEY}
+  options:
+    response_format: b64_json
+trials: 1
+concurrency: 3
+s3:
+  enabled: false

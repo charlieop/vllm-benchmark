@@ -1,0 +1,14 @@
+.env
+.venv/
+.pytest_cache/
+**/__pycache__/
+*.pyc
+outputs/
+model-cache/
+dist/
+raw/**
+!raw/README.md
+!raw/white_background/
+!raw/white_background/**
+assets/**
+!assets/README.md

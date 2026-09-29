@@ -1,0 +1,25 @@
+task_name: white_background
+generation_version: openai-sunburst-v3
+output_root: ../outputs
+system_prompt: |
+  Edit the input image according to the instruction. Return one image.
+dataset:
+  path: white_background.py
+  raw_path: white_background
+  params:
+    max_size: [1024, 1024]
+    shrink_mode: scale
+    size_multiple: 16
+evaluator:
+  path: white-background.py
+  params: {}
+model:
+  backend: openai
+  id: gpt-image-2.5-sunburst-2026-09-08
+  api_key: ${OPENAI_API_KEY}
+  options:
+    output_format: png
+trials: 1
+concurrency: 3
+s3:
+  enabled: false

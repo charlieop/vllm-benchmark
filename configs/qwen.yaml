@@ -1,0 +1,36 @@
+task_name: white_background
+generation_version: qwen-16gb-v3
+output_root: ../outputs
+system_prompt: |
+  Edit the input image according to the instruction. Return one image.
+dataset:
+  path: white_background.py
+  raw_path: white_background
+  params:
+    max_size: [1024, 1024]
+    shrink_mode: scale
+    size_multiple: 32 # Qwen-Image 2.1 requires dimensions divisible by 32.
+evaluator:
+  path: white-background.py
+  params: {}
+aggregator:
+  path: white_background.py
+  params: {}
+model:
+  backend: qwen
+  id: Qwen/Qwen-Image-2.1
+  revision: 790c92633540aa0cb11d9abf19eb46d861714758
+  cache_dir: ../model-cache
+  profile: vram_16gb
+  options:
+    num_inference_steps: 40
+trials: 1
+base_seed: 42
+concurrency: 3 # Remote only. Local Qwen always uses one worker.
+retries:
+  max_attempts: 3
+  base_delay_s: 1
+  max_delay_s: 30
+save_inputs: true
+s3:
+  enabled: false
