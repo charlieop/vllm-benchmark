@@ -1,4 +1,4 @@
-"""Four tiny, lazily loaded images for a complete benchmark smoke test."""
+"""Lazily loaded images for a white-background benchmark."""
 
 from pathlib import Path
 
@@ -10,12 +10,16 @@ from visionbench.types import Sample
 
 class WhiteBackgroundDataset:
     def __init__(self, root: Path, *, max_size: tuple[int, int] | None, shrink_mode: str, size_multiple: int):
-        self.paths = sorted(root.glob("*.png"))
+        supported_extensions = {".png", ".jpeg", ".jpg", ".webp"}
+        self.paths = sorted(
+            (path for path in root.iterdir() if path.is_file() and path.suffix.lower() in supported_extensions),
+            key=lambda path: path.name.lower(),
+        )
         self.max_size = max_size
         self.shrink_mode = shrink_mode
         self.size_multiple = size_multiple
         if not self.paths:
-            raise ValueError(f"No PNG images found under {root}")
+            raise ValueError(f"No PNG, JPEG, or WebP images found under {root}")
 
     def __len__(self) -> int:
         return len(self.paths)

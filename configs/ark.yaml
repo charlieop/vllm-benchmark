@@ -1,5 +1,5 @@
 task_name: white_background
-generation_version: seedream-pro-v3
+generation_version: seedream-pro-v1
 output_root: ../outputs
 system_prompt: |
   Edit the input image according to the instruction. Return one image.

@@ -12,6 +12,13 @@ METRICS = {
 
 def score(generated_image: Image.Image, sample: Sample, config: dict) -> dict[str, float]:
     rgb = generated_image.convert("RGB")
-    white = sum(rgb.getpixel((x, y)) == (255, 255, 255)
-                for y in range(rgb.height) for x in range(rgb.width))
+    minimum_channel = config.get("white_min_channel", 240)
+    if not isinstance(minimum_channel, int) or not 0 <= minimum_channel <= 255:
+        raise ValueError("white_min_channel must be an integer from 0 through 255")
+
+    white = sum(
+        all(channel >= minimum_channel for channel in rgb.getpixel((x, y)))
+        for y in range(rgb.height)
+        for x in range(rgb.width)
+    )
     return {"white_fraction": white / (rgb.width * rgb.height)}

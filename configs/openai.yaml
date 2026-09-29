@@ -1,5 +1,5 @@
 task_name: white_background
-generation_version: openai-sunburst-v3
+generation_version: openai-sunburst-v1
 output_root: ../outputs
 system_prompt: |
   Edit the input image according to the instruction. Return one image.

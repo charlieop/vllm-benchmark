@@ -7,3 +7,6 @@ model-cache/
 outputs/
 dist/
 *.pyc
+
+assets/
+raw/

@@ -1,5 +1,5 @@
 task_name: white_background
-generation_version: qwen-16gb-v3
+generation_version: qwen-16gb-v1
 output_root: ../outputs
 system_prompt: |
   Edit the input image according to the instruction. Return one image.
@@ -12,7 +12,8 @@ dataset:
     size_multiple: 32 # Qwen-Image 2.1 requires dimensions divisible by 32.
 evaluator:
   path: white-background.py
-  params: {}
+  params:
+    white_min_channel: 240
 aggregator:
   path: white_background.py
   params: {}
@@ -24,6 +25,7 @@ model:
   profile: vram_16gb
   options:
     num_inference_steps: 40
+    vae_precision: bf16
 trials: 1
 base_seed: 42
 concurrency: 3 # Remote only. Local Qwen always uses one worker.
