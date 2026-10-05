@@ -1,6 +1,6 @@
 # PILOT (uniform subset) — numbers are NOT full-test-set results; report them as a subset.
 # Surface normal estimation — DIODE-indoor val, 325 images (Marigold split)
-# Data: see assets/surface_normal/README.md.  Run:  uv run visionbench run --config qwen_normal_diode_pilot
+# Data: scripts/download_surface_normal.sh.  Run:  uv run visionbench run --config qwen_normal_diode_pilot
 task_name: surface_normal_diode
 generation_version: qwen-pilot-v1
 output_root: ../outputs
@@ -8,8 +8,7 @@ system_prompt: |
   Edit the input image according to the instruction. Return one image.
 dataset:
   path: surface_normal_diode.py
-  raw_path: surface_normal/diode/val
-  assets_path: surface_normal
+  raw_path: surface_normal/diode/val  # scripts/download_surface_normal.sh
   params:
     max_size: [1024, 1024]   # NYUv2/iBims 640x480 and DIODE 1024x768 pass through unchanged
     shrink_mode: scale

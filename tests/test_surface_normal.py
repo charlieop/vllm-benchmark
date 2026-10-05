@@ -90,24 +90,24 @@ def test_loader_crop_marks_uncovered_pixels(tmp_path):
 
 
 def test_loader_reads_split_and_subset(tmp_path):
-    raw = tmp_path / "raw"
-    for sub in ("indoor/a", "outdoor/b"):
+    raw = tmp_path / "raw"  # mirrors raw/surface_normal/diode/val after scripts/download_surface_normal.sh
+    for sub in ("indoors/a", "outdoor/b"):
         (raw / sub).mkdir(parents=True)
         Image.new("RGB", (100, 70), "red").save(raw / sub / "im.png")
         np.save(raw / sub / "im_normal.npy", _smooth_normals(70, 100))
-    assets = tmp_path / "assets"
-    assets.mkdir()
-    (assets / "diode_test.txt").write_text(
-        "indoor/a/im.png indoor/a/im_normal.npy\noutdoor/b/im.png outdoor/b/im_normal.npy\n")
+    (raw / "diode_test.txt").write_text(
+        "indoors/a/im.png indoors/a/im_normal.npy\noutdoor/b/im.png outdoor/b/im_normal.npy\n")
     loader = ROOT / "tasks/dataloaders/surface_normal_diode.py"
-    dataset = load_dataset(loader, {"raw_dir": str(raw), "assets_dir": str(assets), "size_multiple": 32})
+    dataset = load_dataset(loader, {"raw_dir": str(raw), "size_multiple": 32})
     assert len(dataset) == 1
     sample = dataset[0]
-    assert sample.sample_id == "diode/indoor/a/im"
+    assert sample.sample_id == "diode/indoors/a/im"
     assert sample.image.size == (96, 64)
     assert sample.ground_truth["gt_size"] == [100, 70]
-    outdoor = load_dataset(loader, {"raw_dir": str(raw), "assets_dir": str(assets), "subset": "outdoor"})
+    outdoor = load_dataset(loader, {"raw_dir": str(raw), "subset": "outdoor"})
     assert outdoor[0].sample_id == "diode/outdoor/b/im"
+    with pytest.raises(FileNotFoundError, match="download_surface_normal"):
+        load_dataset(loader, {"raw_dir": str(tmp_path / "nowhere")})
 
 
 def test_aggregator_policies():

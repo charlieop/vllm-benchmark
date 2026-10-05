@@ -1,5 +1,5 @@
 # Surface normal estimation — NYUv2 test, 654 images (Marigold split)
-# Data: see assets/surface_normal/README.md.  Run:  uv run visionbench run --config qwen_normal_nyuv2
+# Data: scripts/download_surface_normal.sh.  Run:  uv run visionbench run --config qwen_normal_nyuv2
 task_name: surface_normal_nyuv2
 generation_version: qwen-16gb-v1
 output_root: ../outputs
@@ -7,8 +7,7 @@ system_prompt: |
   Edit the input image according to the instruction. Return one image.
 dataset:
   path: surface_normal_nyuv2.py
-  raw_path: surface_normal/nyuv2/test
-  assets_path: surface_normal
+  raw_path: surface_normal/nyuv2/test  # scripts/download_surface_normal.sh
   params:
     max_size: [1024, 1024]   # NYUv2/iBims 640x480 and DIODE 1024x768 pass through unchanged
     shrink_mode: scale
