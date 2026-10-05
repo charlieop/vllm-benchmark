@@ -13,14 +13,15 @@ dataset:
     max_size: [1024, 1024]   # NYUv2/iBims 640x480 and DIODE 1024x768 pass through unchanged
     shrink_mode: scale
     size_multiple: 32        # Qwen-Image 2.1 requires dimensions divisible by 32.
-    subset: indoor           # 325 DIODE-indoor test images
+    subset: indoors          # 325 DIODE-indoor test images
 evaluator:
   path: surface_normal.py
   params:
-    # Fixed RGB-channel -> GT-axis mapping. Set ONCE from the calibration run
+    # Fixed RGB-channel -> GT-axis mapping, calibrated on qwen_normal_calib
+    # (DIODE-outdoor, 50 imgs: 24.6 deg vs 51.3 deg runner-up). Re-calibrate per model:
     # (qwen_normal_calib + `python tasks/evaluators/surface_normal.py calibrate`),
     # then keep it identical for nyuv2 / ibims / diode.
-    rgb_to_gt: ["+r", "+g", "+b"]
+    rgb_to_gt: ["-r", "+g", "+b"]
     degenerate_norm_eps: 0.05   # decoded |v| below this = no direction (e.g. mid-gray)
     degenerate_error_deg: 90.0  # error assigned to degenerate / uncovered valid pixels
 aggregator:

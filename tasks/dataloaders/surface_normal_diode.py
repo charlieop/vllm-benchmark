@@ -1,4 +1,4 @@
-"""Surface normal loader: DIODE val (indoor=325 test images; outdoor is used only for convention calibration)."""
+"""Surface normal loader: DIODE val (indoors=325 test images; outdoor is used only for convention calibration)."""
 
 import importlib.util
 from pathlib import Path
@@ -10,4 +10,4 @@ _spec.loader.exec_module(_common)
 
 
 def load_dataset(config: dict):
-    return _common.build(config, dataset_name="diode", default_split="diode_test.txt", default_subset="indoor")
+    return _common.build(config, dataset_name="diode", default_split="diode_test.txt", default_subset="indoors")
