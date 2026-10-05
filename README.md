@@ -162,6 +162,35 @@ Adds a COCO human pose preservation benchmark task for the POS metrics experimen
 
 1000/1000 generations succeeded, with 0 scoring failures.
 
+## Surface normal estimation
+
+`configs/qwen_normal_{nyuv2,ibims,diode}.yaml` benchmark surface normals on NYUv2 test (654), iBims-1 (100) and DIODE-indoor (325) with the datasets of RINO ([Let RGB Be the Language of Vision](https://arxiv.org/abs/2607.12450)) Table 3. Splits, GT normals and valid masks come from the Marigold normals release, the same source as the DSINE / Marigold / StableNormal baselines in that table. The model repaints the photo as an RGB normal map. [`tasks/evaluators/surface_normal.py`](tasks/evaluators/surface_normal.py) decodes `v = 2·RGB/255 − 1`, resizes bilinearly back to the GT frame, renormalizes, applies a fixed axis convention, and scores the per-pixel angle. It reports mean and median angular error and the % of pixels under 11.25°, 22.5° and 30°, per image and then averaged over images.
+
+```bash
+bash scripts/download_surface_normal.sh   # Marigold normals eval zip -> raw/surface_normal/ (~21 GB download, resumable)
+uv run visionbench generate --config qwen_normal_calib                                  # 50 DIODE-outdoor images
+uv run python tasks/evaluators/surface_normal.py calibrate --config qwen_normal_calib   # prints rgb_to_gt
+uv run visionbench run --config qwen_normal_ibims    # likewise qwen_normal_diode, qwen_normal_nyuv2
+```
+
+Generated normal maps use an unknown axis and sign convention. `calibrate` scores all 48 signed axis permutations on DIODE-outdoor images, which are disjoint from every test set, and prints the best one. Set it once as `evaluator.params.rgb_to_gt` in the test configs; it is `["-r", "+g", "+b"]` for Qwen-Image 2.1 (24.6° vs 51.3° for the runner-up), so re-calibrate for each new model. Only zero-length GT vectors are masked. Predictions with no direction inside valid GT count as 90° and are reported as `degenerate_pixel_pct`, and failed generations count as 90° for the whole image (`failed_sample_policy: penalize`). `*_pilot.yaml` configs run uniform subsets for a quick check.
+
+Results on the full test sets (one trial, seed 42, 40 steps, native resolution; one A40, ~16 s per 640×480 image and ~33 s per 1024×768 image):
+
+| Dataset | Model | Mean ↓ | Median ↓ | < 11.25° ↑ | < 22.5° ↑ | < 30° ↑ |
+|---|---|---|---|---|---|---|
+| NYUv2 | Qwen-Image 2.1 (`790c926`), this repo | 19.07 | 11.66 | 50.74 | 74.77 | 81.52 |
+| | Qwen-Image-Edit, RINO Table 3 | 20.21 | 13.46 | – | – | – |
+| | StableNormal, RINO Table 3 | 19.71 | 10.53 | 53.04 | 75.89 | 81.72 |
+| iBims-1 | Qwen-Image 2.1 (`790c926`), this repo | 18.80 | 9.98 | 58.11 | 79.17 | 83.16 |
+| | Qwen-Image-Edit, RINO Table 3 | 20.66 | 12.03 | – | – | – |
+| | StableNormal, RINO Table 3 | 17.25 | 8.06 | 66.66 | 81.13 | 84.63 |
+| DIODE-indoor | Qwen-Image 2.1 (`790c926`), this repo | 18.14 | 14.01 | 41.68 | 80.48 | 88.25 |
+| | Qwen-Image-Edit, RINO Table 3 | 21.99 | 18.14 | – | – | – |
+| | StableNormal, RINO Table 3 | 13.70 | 9.46 | 63.45 | 86.31 | 92.11 |
+
+StableNormal threshold columns are from the StableNormal paper (Table 2). No generation or scoring failures occurred.
+
 ## Tests
 
 ```bash
