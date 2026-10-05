@@ -92,6 +92,14 @@ uv run visionbench run --config qwen_nyuv2_depth
 
 The headline metrics (`abs_rel`, `delta1`, ...) align in disparity space (`s·luma + t ≈ 1/gt`), which is the MiDaS / Depth Anything convention and RINO Table 1. The `*_depthspace` metrics align in linear depth (`s·luma + t ≈ gt`), the Marigold convention and RINO Table 2. Least squares may choose a negative scale, so polarity is recovered and only depth ordering and shape are scored. The loader upscales 640×480 inputs to 1024×768 (`upscale_long_side`) so Qwen-Image 2.1 generates near its ~1 MP condition resolution. Set `limit: N` under `dataset.params` together with a new `generation_version` for a quick subset run. The supplied model profile keeps everything in bf16 on one 48 GB GPU (about 27 s per image at 40 steps on an RTX A6000). Use `profile: vram_16gb` on smaller cards.
 
+Zero-shot results on all 654 NYUv2 test images (one trial, seed 42, 40 steps, 1024×768):
+
+| Model | AbsRel ↓ | δ1 ↑ | δ2 ↑ | δ3 ↑ | RMSE ↓ | AbsRel (depth-space) ↓ | δ1 (depth-space) ↑ |
+|---|---|---|---|---|---|---|---|
+| Qwen-Image 2.1 (`790c926`), this repo | 0.0845 | 0.922 | 0.982 | 0.995 | 0.385 | 0.0987 | 0.906 |
+| Qwen-Image-Edit, RINO Table 1 | 0.086 | 0.927 | – | – | – | – | – |
+| Depth Anything V2, RINO Table 1 | 0.045 | 0.979 | – | – | – | – | – |
+
 ## YAML and credentials
 
 The YAML files are [`configs/config_dummy.yaml`](configs/config_dummy.yaml), [`configs/qwen.yaml`](configs/qwen.yaml), [`configs/openai.yaml`](configs/openai.yaml), [`configs/gemini.yaml`](configs/gemini.yaml), and [`configs/ark.yaml`](configs/ark.yaml). They select explicit model IDs, a multiline system prompt, task files/parameters, trial count, remote concurrency (default 3), retry policy, output root, and S3 archive settings. Local Qwen always runs one generation at a time. Model-specific controls belong under `model.options`; invalid Qwen combinations fail before inference. Model-specific prompt tuning should use a separately labeled run; all main comparisons should use the same task and sample prompts.
