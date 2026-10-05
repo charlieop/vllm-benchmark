@@ -141,6 +141,27 @@ docker run --rm --gpus all --env-file .env \
 
 The image installs all model and API dependencies. It includes only the four toy raw images; mount `raw/` and `assets/` to use larger datasets without baking them into the image. For API-only calls, the same image can run without `--gpus all`. On EC2, ensure the instance has enough EBS space for model weights, datasets, and saved inputs/outputs; an instance profile is the easiest way to grant S3 archive permissions. Model download and real GPU/API generation were not available in the development environment, so use the dummy run and notebooks first, then manually smoke-test one image per real provider and Qwen profile.
 
+## COCO pose benchmark
+
+Adds a COCO human pose preservation benchmark task for the POS metrics experiment. The task follows a fixed pose-estimation protocol: use COCO Keypoints 2017 validation images, ask the image editor to preserve the person and pose, then run a fixed pretrained pose estimator on the generated image and compare predicted keypoints against the original COCO ground truth.
+
+- `tasks/dataloaders/coco_keypoints.py`: loads COCO 2017 `val2017` images with `annotations/person_keypoints_val2017.json`. The first version selects one visible dominant person per image, filters for enough visible keypoints and minimum person area, preprocesses images to Qwen-compatible dimensions, and transforms ground-truth keypoints and boxes into the processed image frame.
+- `tasks/evaluators/coco_pose.py`:
+  - Runs a fixed torchvision Keypoint R-CNN pose detector on each generated image.
+  - Matches the predicted person to the ground-truth person by bounding-box IoU.
+  - Scores visible COCO keypoints with normalized keypoint error.
+  - Reports PCK@0.05, PCK@0.10, PCK@0.20, NMKE, pose detection failure rate, missing-keypoint rate, and per-image COCO-style OKS.
+- `configs/coco_pose_qwen.yaml`: Qwen-Image 2.1 config for the COCO pose task.
+- `tests/test_coco_pose_loader.py`: loader selection, preprocessing, box transform, and keypoint transform coverage.
+
+### Results (1000 COCO val images, RTX 4090)
+
+| Model | PCK@0.05 ↑ | PCK@0.10 ↑ | PCK@0.20 ↑ | NMKE ↓ | Detection failure ↓ | Missing keypoint ↓ | OKS ↑ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Qwen-Image 2.1, 1000-sample COCO pose run | 0.8363 | 0.8954 | 0.9243 | 0.0650 | 0.0370 | 0.0583 | 0.7856 |
+
+1000/1000 generations succeeded, with 0 scoring failures.
+
 ## Tests
 
 ```bash
