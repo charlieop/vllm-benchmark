@@ -194,14 +194,38 @@ Adds a COCO human pose preservation benchmark task for the POS metrics experimen
   - Reports PCK@0.05, PCK@0.10, PCK@0.20, NMKE, pose detection failure rate, missing-keypoint rate, and per-image COCO-style OKS.
 - `configs/coco_pose_qwen.yaml`: Qwen-Image 2.1 config for the COCO pose task.
 - `tests/test_coco_pose_loader.py`: loader selection, preprocessing, box transform, and keypoint transform coverage.
+- `scripts/download_coco_pose.sh`: downloads and extracts the required COCO files into the ignored `raw/coco2017/` directory. This task has no assets to download.
 
-### Results (1000 COCO val images, RTX 4090)
+### Dataset setup
+
+```bash
+./scripts/download_coco_pose.sh
+```
+
+The script fetches the 5,000-image COCO 2017 validation split and
+`person_keypoints_val2017.json`, then creates the layout expected by the
+config:
+
+```text
+raw/coco2017/
+├── val2017/
+└── annotations/person_keypoints_val2017.json
+```
+
+`raw/` and `assets/` are gitignored. Downloaded datasets must not be committed.
+Set `RAW_ROOT=/path/to/storage/raw` to put the dataset on a different volume.
+
+### Results (complete filtered COCO split, RTX 4090)
 
 | Model | PCK@0.05 ↑ | PCK@0.10 ↑ | PCK@0.20 ↑ | NMKE ↓ | Detection failure ↓ | Missing keypoint ↓ | OKS ↑ |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Qwen-Image 2.1, 1000-sample COCO pose run | 0.8363 | 0.8954 | 0.9243 | 0.0650 | 0.0370 | 0.0583 | 0.7856 |
+| Qwen-Image 2.1, complete 1,593-sample COCO pose run | 0.8379 | 0.8981 | 0.9275 | 0.0611 | 0.0320 | 0.0536 | 0.7869 |
 
-1000/1000 generations succeeded, with 0 scoring failures.
+The evaluation begins with the 5,000-image COCO validation set and retains
+1,593 unambiguous, sufficiently large people (at least 10 visible keypoints)
+under the loader's fixed filtering protocol. All 1,593 generations succeeded,
+with 0 scoring failures. Qwen-Image 2.1 was pinned to revision
+`790c92633540aa0cb11d9abf19eb46d861714758`, run with 40 steps on one RTX 4090.
 
 ## Surface normal estimation
 
